@@ -83,7 +83,7 @@ class FileProgressLogger[T: State]:
         :param file_path: Path object representing the file.
         :return: A tuple containing the file name and modification time.
         """
-        file_path = Path(file_path).resolve()
+        file_path = Path(file_path).absolute()
 
         if file_path.is_file():
             return str(file_path), file_path.stat().st_mtime, file_path.stat().st_size

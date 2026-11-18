@@ -140,6 +140,29 @@ def test_persist_state_to_json(
         }
 
 
+def test_symlink_path_is_preserved_in_log(
+    temp_log_file_path: Path,
+    temp_data_file_path: Path,
+    temp_data_file_metadata: SubmissionFileMetadata,
+):
+    """Check that logs preserve the symlink path."""
+    alias_path = temp_data_file_path.with_name("masked_data.bed")
+    alias_path.symlink_to(temp_data_file_path)
+
+    state = {"progress": 100, "status": "completed"}
+
+    logger = FileProgressLogger(temp_log_file_path)
+    logger.set_state(alias_path, temp_data_file_metadata, state)
+
+    with open(temp_log_file_path) as file:
+        saved_entry = next(read_multiple_json(file))
+
+    assert saved_entry["file_path"] == str(alias_path)
+
+    reloaded_logger = FileProgressLogger(temp_log_file_path)
+    assert reloaded_logger.get_state(alias_path, temp_data_file_metadata) == state
+
+
 def test_get_index(mocker, logger, temp_data_file_path):
     """Test that file index is generated correctly."""
     # Mock the stat result to control modification time
